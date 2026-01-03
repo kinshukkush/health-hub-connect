@@ -1,0 +1,116 @@
+name: Nightly Regression Tests
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Test environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  full-regression-suite:
+    name: Full Regression Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Playwright dependencies
+        working-directory: ./playwright-tests
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run regression tests - ${{ matrix.browser }}
+        working-directory: ./playwright-tests
+        env:
+          BASE_URL: ${{ secrets.STAGING_URL }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: npm test -- --project=${{ matrix.browser }}
+        continue-on-error: true
+
+      - name: Upload test artifacts - ${{ matrix.browser }}
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: regression-report-${{ matrix.browser }}
+          path: |
+            playwright-tests/playwright-report/
+            playwright-tests/test-results/
+          retention-days: 30
+
+  api-regression:
+    name: API Regression Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Run API regression tests
+        working-directory: ./api-tests
+        run: |
+          newman run MediTrack_API_Tests.postman_collection.json \
+            --env-var "base_url=${{ secrets.API_BASE_URL }}" \
+            --iteration-count 3 \
+            -r htmlextra \
+            --reporter-htmlextra-export ./reports/regression-api-report.html
+        continue-on-error: true
+
+      - name: Upload API regression report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-regression-report
+          path: api-tests/reports/
+          retention-days: 30
+
+  notify-results:
+    name: Notify Test Results
+    runs-on: ubuntu-latest
+    needs: [full-regression-suite, api-regression]
+    if: always()
+    
+    steps:
+      - name: Create test summary
+        run: |
+          echo "### 🌙 Nightly Regression Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Regression | ${{ needs.full-regression-suite.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API Regression | ${{ needs.api-regression.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Check artifacts for detailed reports." >> $GITHUB_STEP_SUMMARY

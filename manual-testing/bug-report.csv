@@ -1,0 +1,42 @@
+Bug ID,Date Reported,Reported By,Module,Severity,Priority,Summary,Description,Steps to Reproduce,Expected Result,Actual Result,Environment,Browser,OS,Status,Assigned To,Fixed In Version,Resolution,Comments
+BUG-001,2026-01-02,QA Team,Authentication,High,High,Login fails with valid credentials on first attempt,User cannot login with valid credentials on first attempt. Works on second attempt.,"1. Navigate to login page
+2. Enter valid email
+3. Enter valid password
+4. Click Login button","User should be logged in successfully and redirected to dashboard","Login fails with 'Invalid credentials' error. Second attempt succeeds.",Test Environment,Chrome 120,Windows 11,New,Dev Team,,,
+BUG-002,2026-01-02,QA Team,Cart,Medium,Medium,Cart badge not updating after adding item,Cart badge in header does not update count when item is added to cart. Shows 0 even after adding items.,"1. Login to application
+2. Search for medicine
+3. Add medicine to cart
+4. Observe cart badge in header",Cart badge should show '1' after adding first item,"Cart badge shows '0' even though item is in cart. Page refresh fixes it.",Test Environment,Firefox 121,Windows 11,New,Frontend Team,,,
+BUG-003,2026-01-02,QA Team,Search,Low,Low,Search results showing duplicate entries,When searching for medicines certain medicines appear twice in search results.,"1. Navigate to search page
+2. Search for 'Paracetamol'
+3. Observe results",Each medicine should appear once in results,"Some medicines appear 2 times in results. Duplicate entries visible.",Test Environment,Chrome 120,macOS,New,Backend Team,,,
+BUG-004,2026-01-02,QA Team,Checkout,Critical,Critical,Payment page crashes on clicking Pay Now,Application crashes when user clicks 'Pay Now' button on payment page. Console shows TypeError.,"1. Add items to cart
+2. Proceed to checkout
+3. Enter delivery address
+4. Select payment method
+5. Click 'Pay Now' button",Payment should be processed,"Application crashes. Console error: 'Cannot read property amount of undefined'",Test Environment,Chrome 120,Windows 11,New,Dev Team,,,
+BUG-005,2026-01-02,QA Team,UI,Low,Low,Dark mode toggle not working in Settings,When user toggles dark mode in Settings page the theme does not change. Light mode persists.,"1. Login to account
+2. Navigate to Settings
+3. Click on Appearance section
+4. Toggle Dark Mode switch",Theme should change to dark mode,"Toggle switches but theme remains light. No visual change. Works after page refresh.",Test Environment,Edge 120,Windows 11,New,Frontend Team,,,
+BUG-006,2026-01-02,QA Team,API,High,High,GET /api/medicines returns 500 error intermittently,Medicine list API sometimes returns 500 Internal Server Error. Works after retry.,"1. Send GET request to /api/medicines
+2. Observe response
+3. Retry if fails",Status 200 with medicine list,"Sometimes returns 500 error. Server logs show 'Connection timeout' to database.",Test Environment,Postman,N/A,New,Backend Team,,,
+BUG-007,2026-01-02,QA Team,Appointments,Medium,High,Appointment booking confirmation not sent,After booking appointment user receives booking confirmation on UI but no email confirmation sent.,"1. Login to account
+2. Navigate to Doctors page
+3. Select doctor
+4. Book appointment slot
+5. Confirm booking
+6. Check email",User should receive email confirmation,"Booking successful on UI but email not received. SMTP logs show 'Authentication failed'.",Test Environment,Chrome 120,Windows 11,New,Backend Team,,,
+BUG-008,2026-01-02,QA Team,Orders,Medium,Medium,Order history shows incorrect order status,Order history page shows 'Pending' status for orders that are already delivered.,"1. Login to account
+2. Navigate to My Orders
+3. View order list
+4. Check order status",Delivered orders should show 'Delivered' status,"Orders show 'Pending' even after delivery. Status not updating from backend.",Test Environment,Chrome 120,Windows 11,New,Backend Team,,,
+BUG-009,2026-01-02,QA Team,Prescription,High,High,Large prescription images fail to upload,Prescription images larger than 2MB fail to upload without error message.,"1. Login to account
+2. Navigate to prescription upload
+3. Select image file > 2MB
+4. Click Upload",Error message should inform about size limit,"Upload silently fails. No error message shown. Upload button just spins indefinitely.",Test Environment,Chrome 120,Windows 11,New,Dev Team,,,
+BUG-010,2026-01-02,QA Team,Admin,Medium,Medium,Admin dashboard statistics showing incorrect data,Admin dashboard displays wrong count for total users and appointments.,"1. Login as admin
+2. Navigate to Admin Dashboard
+3. View statistics widgets
+4. Manually verify counts","Statistics should match actual database counts","Total Users shows 150 (actual: 127). Total Appointments shows 45 (actual: 62). Numbers don't match.",Test Environment,Chrome 120,Windows 11,New,Backend Team,,,

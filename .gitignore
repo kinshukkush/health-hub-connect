@@ -8,9 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Dependencies
-node_modules
-Frontend/node_modules
-Backend/node_modules
+node_modules/
+**/node_modules/
+Frontend/node_modules/
+Backend/node_modules/
+playwright-tests/node_modules/
+appium-tests/node_modules/
+api-tests/node_modules/
 
 # Build outputs
 dist
@@ -18,19 +22,67 @@ dist-ssr
 build
 *.local
 
-# Environment variables
+# Environment variables - NEVER commit these!
 .env
 .env.local
 .env.production
+.env.development
+.env.test
 Frontend/.env
 Frontend/.env.local
+Frontend/.env.production
 Backend/.env
 Backend/.env.local
+Backend/.env.production
+playwright-tests/.env
+playwright-tests/.env.local
+
+# Playwright Test Results
+playwright-tests/test-results/
+playwright-tests/playwright-report/
+playwright-tests/playwright/.cache/
+playwright-tests/screenshots/
+playwright-tests/videos/
+playwright-tests/traces/
+playwright-tests/allure-results/
+playwright-tests/allure-report/
+
+# Appium Test Results
+appium-tests/test-results/
+appium-tests/screenshots/
+appium-tests/videos/
+appium-tests/allure-results/
+appium-tests/allure-report/
+appium-tests/logs/
+
+# API Test Results
+api-tests/newman/
+api-tests/reports/
+api-tests/test-results/
+
+# Test artifacts
+test-results/
+test-reports/
+allure-results/
+allure-report/
+screenshots/
+videos/
+traces/
+*.har
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json.example
 .idea
+*.swp
+*.swo
+*~
 .DS_Store
 *.suo
 *.ntvs*
@@ -41,9 +93,31 @@ Backend/.env.local
 # OS files
 Thumbs.db
 .DS_Store
+ehthumbs.db
+Desktop.ini
 
 # Build files
 *.tsbuildinfo
 
-# Vercel
+# Deployment
 .vercel
+.netlify
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Lock files (optional - uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Personal notes (add your own patterns)
+**/NOTES.md
+**/TODO-personal.md

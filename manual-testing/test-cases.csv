@@ -1,0 +1,420 @@
+Test Case ID,Module,Test Scenario,Test Case Description,Priority,Preconditions,Test Steps,Test Data,Expected Result,Actual Result,Status,Tested By,Date,Comments
+TC-001,Authentication,User Registration,Verify user can register with valid details,High,User is on registration page,"1. Navigate to registration page
+2. Enter valid email
+3. Enter valid name
+4. Enter valid phone number
+5. Enter strong password
+6. Confirm password
+7. Click Register button","Email: testuser@example.com
+Name: John Doe
+Phone: +1234567890
+Password: Test@1234","User is registered successfully
+Success message displayed
+User redirected to login page",,Not Tested,,,
+TC-002,Authentication,User Registration,Verify registration with existing email fails,High,User with email already exists,"1. Navigate to registration page
+2. Enter existing email
+3. Enter valid details
+4. Click Register button",Email: existing@example.com,"Registration fails
+Error message: 'Email already registered'
+User remains on registration page",,Not Tested,,,
+TC-003,Authentication,User Registration,Verify registration with weak password fails,High,User is on registration page,"1. Navigate to registration page
+2. Enter valid email
+3. Enter weak password (e.g., '123')
+4. Click Register button",Password: 123,"Registration fails
+Error message: 'Password must be at least 8 characters with uppercase, lowercase and special character'
+Register button may be disabled",,Not Tested,,,
+TC-004,Authentication,User Registration,Verify registration with invalid email format fails,High,User is on registration page,"1. Navigate to registration page
+2. Enter invalid email format
+3. Enter valid other details
+4. Click Register button",Email: notanemail,"Registration fails
+Error message: 'Invalid email format'
+User remains on registration page",,Not Tested,,,
+TC-005,Authentication,User Login,Verify user can login with valid credentials,High,User has registered account,"1. Navigate to login page
+2. Enter valid email
+3. Enter valid password
+4. Click Login button","Email: testuser@example.com
+Password: Test@1234","User is logged in successfully
+Redirected to dashboard
+User session is created",,Not Tested,,,
+TC-006,Authentication,User Login,Verify login with invalid password fails,High,User has registered account,"1. Navigate to login page
+2. Enter valid email
+3. Enter wrong password
+4. Click Login button","Email: testuser@example.com
+Password: WrongPass123","Login fails
+Error message: 'Invalid credentials'
+User remains on login page",,Not Tested,,,
+TC-007,Authentication,User Login,Verify login with unregistered email fails,High,None,"1. Navigate to login page
+2. Enter unregistered email
+3. Enter any password
+4. Click Login button",Email: nonexistent@example.com,"Login fails
+Error message: 'User not found'
+User remains on login page",,Not Tested,,,
+TC-008,Authentication,Password Reset,Verify password reset with valid email,Medium,User has registered account,"1. Click 'Forgot Password' link
+2. Enter registered email
+3. Click 'Send Reset Link' button
+4. Check email for reset link
+5. Click reset link
+6. Enter new password
+7. Confirm password
+8. Click Reset button",Email: testuser@example.com,"Reset link sent successfully
+Reset link is valid
+Password updated successfully
+User can login with new password",,Not Tested,,,
+TC-009,Search,Medicine Search,Verify user can search medicine by name,High,User is logged in,"1. Navigate to medicine search page
+2. Enter medicine name in search box
+3. Press Enter or click Search",Medicine: Paracetamol,"Search results display medicines matching 'Paracetamol'
+Results show medicine name, price, availability
+Results are relevant",,Not Tested,,,
+TC-010,Search,Medicine Search,Verify search with non-existent medicine shows no results,Medium,User is logged in,"1. Navigate to medicine search page
+2. Enter non-existent medicine name
+3. Press Enter",Medicine: XYZ999NotExists,"No results found message displayed
+Empty results list
+Suggestion to check spelling or try different search",,Not Tested,,,
+TC-011,Search,Medicine Search,Verify search filters work correctly,Medium,User is logged in and on search results page,"1. Perform search for medicine
+2. Apply price range filter
+3. Apply category filter
+4. Apply availability filter
+5. Observe filtered results","Search: Pain Relief
+Price: 0-500
+Category: Tablets
+Available: In Stock","Results are filtered correctly
+Only medicines matching all filters are shown
+Filter count updates",,Not Tested,,,
+TC-012,Search,Medicine Details,Verify medicine detail page displays correct information,Medium,User is logged in,"1. Search for medicine
+2. Click on medicine from results
+3. Verify detail page",Medicine: Crocin 500mg,"Detail page shows:
+- Medicine name and brand
+- Price
+- Composition/Salt
+- Dosage instructions
+- Side effects
+- Manufacturer
+- Availability status",,Not Tested,,,
+TC-013,Cart,Add to Cart,Verify user can add medicine to cart,High,User is logged in,"1. Navigate to medicine page
+2. Click 'Add to Cart' button
+3. Verify cart badge updates",Medicine: Paracetamol 500mg,"Medicine added to cart successfully
+Cart badge shows count (1)
+Success message displayed
+'Go to Cart' option available",,Not Tested,,,
+TC-014,Cart,Add to Cart,Verify adding multiple quantities to cart,High,User is logged in,"1. Navigate to medicine page
+2. Increase quantity to 3
+3. Click 'Add to Cart'
+4. View cart",Quantity: 3,"Cart shows 3 units of medicine
+Total price = Unit Price × 3
+Cart badge shows 3",,Not Tested,,,
+TC-015,Cart,Add to Cart,Verify prescription-required medicine cannot be added without prescription,High,User is logged in,"1. Navigate to prescription-required medicine
+2. Try to add to cart without prescription","Medicine: Antibiotic (requires prescription)","Warning message: 'Prescription required'
+User prompted to upload prescription
+Medicine not added to cart until prescription uploaded",,Not Tested,,,
+TC-016,Cart,Cart Management,Verify user can increase quantity in cart,High,"User is logged in, medicine in cart","1. Navigate to cart page
+2. Click '+' button to increase quantity
+3. Verify updated quantity and total",Quantity: 2 → 3,"Quantity increased to 3
+Total price updated correctly
+Cart calculates new total",,Not Tested,,,
+TC-017,Cart,Cart Management,Verify user can remove medicine from cart,High,"User is logged in, medicine in cart","1. Navigate to cart page
+2. Click 'Remove' button on medicine item
+3. Confirm removal",,"Medicine removed from cart
+Cart count decreases
+Total price updated
+If cart empty, 'Empty cart' message shown",,Not Tested,,,
+TC-018,Cart,Cart Management,Verify cart total calculation,High,"User is logged in, multiple items in cart","1. Add multiple medicines with different quantities
+2. Navigate to cart
+3. Verify total calculation","Medicine A: ₹100 × 2
+Medicine B: ₹50 × 3
+Discount: 10%","Subtotal = ₹200 + ₹150 = ₹350
+Discount = ₹35
+Total = ₹315
+Calculation is correct",,Not Tested,,,
+TC-019,Prescription,Upload Prescription,Verify user can upload valid prescription image,High,User is logged in,"1. Navigate to prescription upload section
+2. Click 'Upload Prescription' button
+3. Select valid image file (JPG/PNG)
+4. Click Upload",File: prescription.jpg (< 5MB),"Prescription uploaded successfully
+Preview of prescription shown
+File name displayed
+Option to remove prescription available",,Not Tested,,,
+TC-020,Prescription,Upload Prescription,Verify invalid file format upload fails,Medium,User is logged in,"1. Navigate to prescription upload
+2. Try to upload invalid file format
+3. Click Upload",File: document.txt,"Upload fails
+Error message: 'Invalid file format. Please upload JPG, PNG, or PDF'
+No file uploaded",,Not Tested,,,
+TC-021,Prescription,Upload Prescription,Verify file size limit validation,Medium,User is logged in,"1. Navigate to prescription upload
+2. Try to upload large file (> 5MB)
+3. Click Upload",File: large_image.jpg (10MB),"Upload fails
+Error message: 'File size exceeds 5MB limit'
+No file uploaded",,Not Tested,,,
+TC-022,Checkout,Address Management,Verify user can add new delivery address,High,User is logged in,"1. Navigate to checkout page
+2. Click 'Add New Address'
+3. Enter complete address details
+4. Click 'Save Address'","Name: John Doe
+Phone: +1234567890
+Address: 123 Main St
+City: New York
+PIN: 10001","Address saved successfully
+Address appears in saved addresses list
+User can select this address for delivery",,Not Tested,,,
+TC-023,Checkout,Address Management,Verify user can select existing address,High,"User is logged in, has saved addresses","1. Navigate to checkout page
+2. View saved addresses
+3. Select an address
+4. Proceed to payment",,"Selected address is highlighted
+Delivery address field populated
+Order will be delivered to selected address",,Not Tested,,,
+TC-024,Checkout,Order Placement,Verify user can place order successfully,Critical,"User logged in, items in cart, address added","1. Add medicine to cart
+2. Proceed to checkout
+3. Select delivery address
+4. Choose payment method
+5. Confirm order details
+6. Click 'Place Order' button",,"Order placed successfully
+Order ID generated
+Order confirmation page displayed
+Order saved in order history
+Confirmation email sent (if implemented)",,Not Tested,,,
+TC-025,Checkout,Order Placement,Verify order summary displays correct information,High,"User in checkout page, items in cart","1. Navigate to checkout
+2. Review order summary
+3. Verify all details","Cart items: Medicine A, B
+Address: Valid address
+Payment: COD","Order summary shows:
+- All cart items with quantities
+- Item prices and total
+- Delivery address
+- Payment method
+- Final amount to pay",,Not Tested,,,
+TC-026,Checkout,Payment,Verify payment with valid card details (mocked),High,User at payment step,"1. Select 'Card Payment' option
+2. Enter valid card details
+3. Click 'Pay Now'","Card: 4111111111111111
+CVV: 123
+Expiry: 12/28","Payment successful message
+Order confirmed
+Redirected to order confirmation page",,Not Tested,,,
+TC-027,Checkout,Payment,Verify payment fails with invalid card (mocked),Medium,User at payment step,"1. Select 'Card Payment' option
+2. Enter invalid card details
+3. Click 'Pay Now'",Card: 0000000000000000,"Payment fails
+Error message: 'Payment failed. Please try again'
+User can retry payment
+Order not placed",,Not Tested,,,
+TC-028,Orders,Order History,Verify user can view order history,Medium,User has placed orders,"1. Login to account
+2. Navigate to 'My Orders' page
+3. View order list",,"Order history page displays all past orders
+Orders sorted by date (most recent first)
+Each order shows: Order ID, Date, Items, Status, Total",,Not Tested,,,
+TC-029,Orders,Order History,Verify order details are displayed correctly,Medium,User has placed orders,"1. Navigate to 'My Orders'
+2. Click on specific order
+3. View order details",Order ID: ORD123456,"Order detail page shows:
+- Order ID and date
+- Order status
+- Items ordered with quantities
+- Delivery address
+- Payment method
+- Total amount paid",,Not Tested,,,
+TC-030,Orders,Order Tracking,Verify order status tracking,Medium,User has active order,"1. Navigate to order details
+2. View order status timeline
+3. Check tracking information",Order Status: In Transit,"Order timeline shows:
+- Order Placed ✓
+- Confirmed ✓
+- Shipped ✓
+- Out for Delivery (current)
+- Delivered (pending)
+Estimated delivery date shown",,Not Tested,,,
+TC-031,Appointments,Doctor Booking,Verify user can search doctors by specialization,High,User is logged in,"1. Navigate to Doctors page
+2. Select specialization from filter
+3. View filtered results",Specialization: Cardiologist,"Results show only Cardiologists
+Doctor cards display: Name, Specialization, Experience, Rating
+Book Appointment button available",,Not Tested,,,
+TC-032,Appointments,Doctor Booking,Verify user can book appointment,High,User is logged in,"1. Search for doctor
+2. Click on doctor profile
+3. Select available time slot
+4. Click 'Book Appointment'
+5. Confirm booking","Doctor: Dr. Smith
+Date: Tomorrow
+Time: 10:00 AM","Appointment booking request sent
+Pending approval status shown
+Appointment appears in 'My Appointments'
+Confirmation message displayed",,Not Tested,,,
+TC-033,Appointments,Appointment Management,Verify user can view upcoming appointments,Medium,"User logged in, has booked appointments","1. Navigate to 'My Appointments' page
+2. View appointment list",,"Appointments displayed with:
+- Doctor name
+- Date and time
+- Specialization
+- Status (Pending/Approved/Cancelled)
+- Option to cancel",,Not Tested,,,
+TC-034,Medical Records,Records Management,Verify user can upload medical report,Medium,User is logged in,"1. Navigate to Medical Records page
+2. Click 'Upload Report'
+3. Select file
+4. Add report name and date
+5. Click 'Upload'","File: blood_test.pdf
+Name: Blood Test Report
+Date: Jan 1, 2026","Report uploaded successfully
+Report appears in medical records list
+User can download report later",,Not Tested,,,
+TC-035,Medical Records,Records Management,Verify user can view medical history,Medium,"User logged in, has uploaded records","1. Navigate to Medical Records page
+2. View list of uploaded records
+3. Click on record to view details",,"Medical records list displays all uploaded reports
+Each record shows: Name, Date, Type
+User can view/download any report
+Reports are chronologically ordered",,Not Tested,,,
+TC-036,Settings,Profile Management,Verify user can update personal information,Medium,User is logged in,"1. Navigate to Settings page
+2. Click 'Edit Profile'
+3. Update name, phone, email
+4. Click 'Save Changes'","Name: Jane Doe
+Phone: +9876543210
+Email: jane@example.com","Profile updated successfully
+Success message displayed
+Changes reflected immediately in profile
+Changes persist after logout/login",,Not Tested,,,
+TC-037,Settings,Theme Preferences,Verify user can switch to dark mode,Low,User is logged in,"1. Navigate to Settings
+2. Click 'Appearance' section
+3. Select 'Dark Mode'
+4. Observe UI change",,"Theme changes to dark mode
+All pages reflect dark theme
+Theme preference saved
+Dark mode persists after page refresh",,Not Tested,,,
+TC-038,Settings,Theme Preferences,Verify theme persists across sessions,Low,User has selected theme preference,"1. Select theme (Light/Dark)
+2. Logout
+3. Login again
+4. Check theme",,"Previously selected theme is applied
+User doesn't need to select theme again
+Theme setting is remembered",,Not Tested,,,
+TC-039,Admin,User Management,Verify admin can view all users,High,Admin is logged in,"1. Login as admin
+2. Navigate to Admin Dashboard
+3. Click 'Users' section
+4. View user list",Admin credentials,"User list displays all registered users
+Shows: User ID, Name, Email, Role, Status
+Search and filter options available
+Pagination works for large lists",,Not Tested,,,
+TC-040,Admin,Appointment Management,Verify admin can approve appointments,High,"Admin logged in, pending appointments exist","1. Navigate to Appointments section
+2. View pending appointments
+3. Select appointment
+4. Click 'Approve' button
+5. Confirm approval",,"Appointment status changed to 'Approved'
+User receives approval notification
+Appointment appears in user's confirmed list
+Admin can see approval timestamp",,Not Tested,,,
+TC-041,Admin,Analytics Dashboard,Verify admin dashboard displays statistics,Medium,Admin is logged in,"1. Login as admin
+2. View admin dashboard
+3. Observe statistics and charts",,"Dashboard displays:
+- Total users count
+- Total appointments
+- Total orders
+- Revenue statistics
+- Charts for trends
+- Recent activities",,Not Tested,,,
+TC-042,Security,Access Control,Verify unauthenticated users cannot access protected routes,Critical,User is not logged in,"1. Clear session/logout
+2. Try to access /dashboard URL directly
+3. Try to access /orders URL directly
+4. Try to access /admin URL directly",,"User redirected to login page
+Protected routes are not accessible
+Error message: 'Please login to continue'
+URL changes to /login",,Not Tested,,,
+TC-043,Security,Authorization,Verify patient cannot access admin dashboard,Critical,User logged in as patient,"1. Login as patient user
+2. Try to navigate to /admin URL directly",Patient credentials,"Access denied
+Error: 'Unauthorized access'
+User redirected to patient dashboard
+Admin routes are protected",,Not Tested,,,
+TC-044,Security,Session Management,Verify JWT token expires after timeout,High,"User logged in, session active","1. Login to application
+2. Wait for token expiry time (e.g., 1 hour)
+3. Try to perform any action
+4. Observe behavior",,"Session expired message shown
+User redirected to login page
+Token is invalidated
+User must login again to continue",,Not Tested,,,
+TC-045,API,Authentication API,POST /api/auth/register - Create new user,High,None,"1. Send POST request to /api/auth/register
+2. Include valid user data in body
+3. Check response","Endpoint: /api/auth/register
+Body: {email, name, password}","Status: 201 Created
+Response contains user object
+Password is hashed
+Success message returned",,Not Tested,,,
+TC-046,API,Authentication API,POST /api/auth/login - User login,High,User account exists,"1. Send POST request to /api/auth/login
+2. Include email and password
+3. Check response","Endpoint: /api/auth/login
+Body: {email, password}","Status: 200 OK
+Response contains JWT token
+Token has correct structure
+Token can be used for authenticated requests",,Not Tested,,,
+TC-047,API,Medicine API,GET /api/medicines - Fetch medicine list,High,Database has medicine data,"1. Send GET request to /api/medicines
+2. Check response",Endpoint: /api/medicines,"Status: 200 OK
+Response is array of medicines
+Each medicine has: id, name, price, category, availability
+Pagination works if implemented",,Not Tested,,,
+TC-048,API,Cart API,POST /api/cart/add - Add item to cart,High,User is authenticated,"1. Send POST request with auth token
+2. Include medicine ID and quantity
+3. Check response","Endpoint: /api/cart/add
+Headers: Authorization: Bearer <token>
+Body: {medicineId, quantity}","Status: 200 OK
+Item added to cart
+Response contains updated cart
+Cart total is calculated",,Not Tested,,,
+TC-049,API,Orders API,GET /api/orders - Fetch user orders,High,User is authenticated and has orders,"1. Send GET request with auth token
+2. Check response","Endpoint: /api/orders
+Headers: Authorization: Bearer <token>","Status: 200 OK
+Response is array of user's orders
+Each order has complete details
+Only user's own orders are returned",,Not Tested,,,
+TC-050,API,Error Handling,Verify API returns proper error for invalid request,Medium,None,"1. Send request with missing required fields
+2. Check error response","Endpoint: /api/auth/register
+Body: {email only, missing password}","Status: 400 Bad Request
+Response contains error message
+Error describes what's missing
+Error format is consistent",,Not Tested,,,
+TC-051,Performance,Page Load,Verify page load time is under 3 seconds,Medium,None,"1. Open application in browser
+2. Measure page load time using DevTools
+3. Check performance metrics",,"Home page loads in < 3 seconds
+First Contentful Paint < 1.5s
+Time to Interactive < 3s
+Performance score > 80",,Not Tested,,,
+TC-052,Performance,API Response,Verify API response time is acceptable,Medium,Server is running,"1. Make API call
+2. Measure response time
+3. Repeat for different endpoints",Endpoints: /api/medicines, /api/orders,"Response time < 500ms for GET requests
+Response time < 1s for POST requests
+Database queries are optimized
+No significant delays",,Not Tested,,,
+TC-053,Compatibility,Browser Testing,Verify application works on Chrome,High,None,"1. Open application in Google Chrome
+2. Test major features
+3. Verify functionality",Chrome version: Latest,"All features work correctly
+Layout is proper
+No console errors
+UI renders correctly",,Not Tested,,,
+TC-054,Compatibility,Browser Testing,Verify application works on Firefox,High,None,"1. Open application in Firefox
+2. Test major features
+3. Verify functionality",Firefox version: Latest,"All features work correctly
+Layout is proper
+No console errors
+Cross-browser CSS issues resolved",,Not Tested,,,
+TC-055,Compatibility,Browser Testing,Verify application works on Edge,High,None,"1. Open application in Microsoft Edge
+2. Test major features
+3. Verify functionality",Edge version: Latest,"All features work correctly
+Layout is proper
+No console errors
+Compatible with Edge",,Not Tested,,,
+TC-056,Responsive,Mobile Testing,Verify application is usable on mobile devices,High,None,"1. Open application on mobile device or emulator
+2. Test navigation
+3. Test key features
+4. Check layout","Device: Mobile (375x667)
+OS: Android/iOS","Application is responsive
+Touch interactions work
+Buttons are tappable
+Text is readable
+No horizontal scrolling",,Not Tested,,,
+TC-057,Responsive,Mobile Testing,Verify application is usable on tablets,Medium,None,"1. Open application on tablet or emulator
+2. Test layout
+3. Test functionality","Device: Tablet (768x1024)","Application adapts to tablet size
+Layout utilizes space efficiently
+Features are accessible
+No layout breaks",,Not Tested,,,
+TC-058,Regression,Cart Persistence,Verify cart persists after page refresh,High,"User logged in, items in cart","1. Add items to cart
+2. Refresh page
+3. Check cart",,"Cart items are retained
+Quantities are preserved
+Total is correct
+Session persists",,Not Tested,,,
+TC-059,Regression,Search Functionality,Verify search auto-suggestions work,Medium,User is on search page,"1. Start typing medicine name
+2. Observe suggestions
+3. Select suggestion",Input: Para,"Auto-suggestions appear while typing
+Suggestions match input
+Clicking suggestion performs search
+Suggestions are relevant",,Not Tested,,,
+TC-060,Regression,Navigation,Verify navigation menu works correctly,Medium,User is logged in,"1. Click on each navigation link
+2. Verify routing
+3. Check active states","Links: Home, Doctors, Appointments, Orders, Cart, Settings","Each link navigates to correct page
+Active link is highlighted
+Breadcrumb updates (if present)
+Back button works",,Not Tested,,,

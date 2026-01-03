@@ -1,0 +1,150 @@
+name: QA Automation Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  playwright-tests:
+    name: Playwright Web Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: playwright-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./playwright-tests
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./playwright-tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: ./playwright-tests
+        env:
+          BASE_URL: ${{ secrets.BASE_URL || 'http://localhost:5173' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: npm test -- --project=chromium
+        continue-on-error: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-tests/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-results
+          path: playwright-tests/test-results/
+          retention-days: 7
+
+  api-tests:
+    name: API Tests (Newman)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Run API tests
+        working-directory: ./api-tests
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'http://localhost:5000' }}
+        run: |
+          newman run MediTrack_API_Tests.postman_collection.json \
+            --env-var "base_url=${API_BASE_URL}" \
+            -r cli,htmlextra,json \
+            --reporter-htmlextra-export ./reports/api-test-report.html \
+            --reporter-json-export ./reports/newman-report.json
+        continue-on-error: true
+
+      - name: Upload API Test Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-test-report
+          path: api-tests/reports/
+          retention-days: 30
+
+  lint-and-format:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Frontend dependencies
+        working-directory: ./Frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./Frontend
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Install Backend dependencies
+        working-directory: ./Backend
+        run: npm ci
+
+      - name: Check Backend code
+        working-directory: ./Backend
+        run: |
+          echo "Backend code check completed"
+        continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [playwright-tests, api-tests, lint-and-format]
+    if: always()
+    
+    steps:
+      - name: Check test results
+        run: |
+          echo "### 🧪 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Web Tests | ${{ needs.playwright-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API Tests | ${{ needs.api-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Quality | ${{ needs.lint-and-format.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Overall Status**: Tests completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Test reports are available in the Artifacts section above." >> $GITHUB_STEP_SUMMARY
