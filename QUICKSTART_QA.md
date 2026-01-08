@@ -8,7 +8,7 @@ Get up and running with the MediTrack QA Automation Suite in minutes!
 
 ```bash
 # Clone repository
-git clone <your-repo-url>
+git clone https://github.com/kinshukkush/health-hub-connect.git
 cd health-hub-connect-main
 
 # Install all dependencies

@@ -98,7 +98,7 @@ MediTrack-QA/
 
 ```bash
 # Clone repository
-git clone <your-repo-url>
+git clone https://github.com/kinshukkush/health-hub-connect.git
 cd health-hub-connect-main
 
 # Install Frontend dependencies
@@ -474,10 +474,11 @@ To add or modify tests:
 
 ## 📧 Contact & Support
 
-**Project Maintainer**: [Your Name]  
-**Email**: [Your Email]  
-**LinkedIn**: [Your LinkedIn]  
-**GitHub**: [Your GitHub]
+**Project Maintainer**: Kinshuk Saxena  
+**Email**: Kinshuksaxena3@gmail.com  
+**LinkedIn**: https://www.linkedin.com/in/kinshuk-saxena-/
+**GitHub**: https://github.com/kinshukkush
+**Instagram**: https://www.instagram.com/kinshuk._.saxena/
 
 ---
 

@@ -8,10 +8,11 @@ A modern, feature-rich healthcare management platform built with React, TypeScri
 
 ## 📚 Documentation
 
-- **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes
-- **[Deployment Guide](DEPLOYMENT.md)** - Detailed Vercel + Render deployment
-- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment verification
 - **[Project Structure](PROJECT_STRUCTURE.md)** - Complete folder structure overview
+- **[QA PROJECT](QA_PROJECT_README.md)** - Complete Automation details
+- **[QUICK START DETAILS](QUICKSTART_QA.md)** - Complete guidance to setpu the project
+- **[Final summary](RESTRUCTURING_SUMMARY.md)** - Final details of the file structure
+- **[Secutity](SECURITY.md)** - Steps to keep in mind for SECURITY
 
 ## 🌟 Features
 
@@ -57,7 +58,7 @@ A modern, feature-rich healthcare management platform built with React, TypeScri
 
 ### 1. Clone the Repository
 ```bash
-git clone <YOUR_GIT_URL>
+git clone https://github.com/kinshukkush/health-hub-connect.git
 cd health-hub-connect-main
 ```
 
@@ -87,9 +88,9 @@ VITE_API_URL=http://localhost:3000/api
 **Backend (Backend/.env.local):**
 ```env
 # MongoDB credentials separated for security
-MONGODB_USERNAME=kinshuksaxena3_db_user
-MONGODB_PASSWORD=Ov5lFTRGbYF3dXrY
-MONGODB_CLUSTER=cluster0.ceqszik.mongodb.net
+MONGODB_USERNAME=your_mongodb_username
+MONGODB_PASSWORD=your_mongodb_password
+MONGODB_CLUSTER=your_cluster.mongodb.net
 MONGODB_DATABASE=healthhub
 
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
