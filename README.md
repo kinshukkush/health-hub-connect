@@ -44,6 +44,48 @@
 
 **HealthHub Connect** is a comprehensive MERN stack healthcare platform with an enterprise-grade QA automation suite. This project demonstrates professional testing practices across web, mobile, and API testing, complete with CI/CD integration.
 
+---
+
+<div align="center">
+
+## 🎨 UI Design: Clinical Noir
+
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
+
+</div>
+
+The frontend features a premium **"Clinical Noir"** design system — a high-contrast, authoritative aesthetic inspired by modern private clinic interiors. Think: a Zurich private hospital meets a Tokyo design studio.
+
+### Design System
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| 🌑 **Base** | `#0B0F1A` | Page backgrounds |
+| 🌒 **Surface** | `#111827` | Cards, panels |
+| 🌓 **Elevated** | `#1A2235` | Modals, dropdowns |
+| ⬜ **Text Primary** | `#F0F4FF` | Headings, body text |
+| 🔵 **Accent** | `#00C8FF` | CTAs, highlights, links |
+| 🟡 **Warning** | `#F5A623` | Alerts, pending states |
+| 🔴 **Danger** | `#FF4D6D` | Errors, destructive actions |
+| 🟢 **Success** | `#00D4A1` | Confirmations, active states |
+
+### Typography
+
+- **Headings**: `DM Serif Display` — elegant serif for hierarchy
+- **Body/UI**: `IBM Plex Sans` — clean, professional sans-serif
+
+### Key UI Features
+
+| Feature | Description |
+|---------|-------------|
+| 🕐 **Live Clock** | Real-time HH:MM:SS display on dashboard |
+| 📊 **Animated KPIs** | Count-up animation on stat tiles |
+| 🔍 **Debounced Search** | 300ms debounce on doctor search |
+| 🟢 **Availability Badges** | Pulsing green dot for available doctors |
+| 📈 **Status Timeline** | 4-step appointment progress indicator |
+| 🎨 **Color-Coded Records** | Type-based border colors for medical records |
+| 📱 **Responsive Hamburger** | Slide-down mobile navigation |
+
 ### 🎯 What This QA Suite Tests
 
 | Feature | Description | Test Coverage |

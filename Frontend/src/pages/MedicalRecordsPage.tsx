@@ -1,55 +1,24 @@
 import React, { useState, useRef } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { useMedicalRecords } from '@/hooks/useMedicalRecords';
 import { MedicalRecord } from '@/types';
-import { 
-  FileText, 
-  Upload, 
-  Download, 
-  Trash2, 
-  Plus,
-  Calendar,
-  User,
-  FlaskConical,
-  Pill,
-  Image,
-  File
-} from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
-const typeIcons = {
-  lab_report: FlaskConical,
-  prescription: Pill,
-  imaging: Image,
-  other: File,
+const typeColors: Record<MedicalRecord['type'], string> = {
+  lab_report: 'text-[#00C8FF] border-[#00C8FF]',
+  prescription: 'text-[#F5A623] border-[#F5A623]',
+  imaging: 'text-[#A78BFA] border-[#A78BFA]',
+  other: 'text-[#00D4A1] border-[#00D4A1]',
 };
 
-const typeLabels = {
+const typeLabels: Record<MedicalRecord['type'], string> = {
   lab_report: 'Lab Report',
   prescription: 'Prescription',
   imaging: 'Imaging',
-  other: 'Other',
+  other: 'Discharge',
 };
 
 export const MedicalRecordsPage: React.FC = () => {
@@ -61,11 +30,21 @@ export const MedicalRecordsPage: React.FC = () => {
   const [uploadType, setUploadType] = useState<MedicalRecord['type']>('lab_report');
   const [uploadDescription, setUploadDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
     if (file) {
       setSelectedFile(file);
     }
@@ -110,187 +89,235 @@ export const MedicalRecordsPage: React.FC = () => {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6 animate-fade-in">
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Medical Records</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="font-['DM_Serif_Display'] text-3xl text-[#F0F4FF]">Medical Records</h1>
+            <p className="text-[#8A9BB5] text-sm mt-1">
               Upload and manage your medical documents
             </p>
           </div>
-          <Button onClick={() => setShowUploadModal(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="bg-[#00C8FF] text-[#0B0F1A] font-semibold text-sm tracking-wider uppercase px-6 py-3 hover:bg-[#33D4FF] transition-all active:scale-[0.98] flex items-center gap-2"
+            aria-label="Upload record"
+          >
+            <Upload className="h-4 w-4" />
             Upload Record
-          </Button>
+          </button>
         </div>
 
-        {/* Records Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {records.map((record) => {
-            const Icon = typeIcons[record.type];
-            return (
-              <Card key={record.id} className="group hover:shadow-lg hover:border-primary/20 transition-all">
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{record.title}</h3>
-                      <Badge variant="secondary" className="mt-1">
-                        {typeLabels[record.type]}
-                      </Badge>
-                    </div>
-                  </div>
+        {/* Upload Zone */}
+        <div
+          className={cn(
+            "border-2 border-dashed bg-[#111827] p-8 text-center transition-all",
+            isDragging ? "border-[#00C8FF] bg-[#00C8FF08]" : "border-[#1E293B] hover:border-[#00C8FF44]"
+          )}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          role="button"
+          aria-label="Drop files or click to upload"
+        >
+          <Upload className="h-8 w-8 text-[#4A5568] mx-auto mb-3" />
+          <p className="text-[#4A5568] text-sm">Drop files or click to upload</p>
+          <p className="text-[#4A5568] text-xs mt-1">PDF, JPG, PNG up to 10MB</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileSelect}
+          />
+        </div>
 
-                  {record.description && (
-                    <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-                      {record.description}
-                    </p>
-                  )}
-
-                  <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{record.uploadedAt}</span>
-                    </div>
-                    {record.doctorName && (
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>{record.doctorName}</span>
-                      </div>
+        {/* Records Table */}
+        {records.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#1E293B]">
+                  <th className="text-left text-[9px] tracking-[0.25em] uppercase text-[#4A5568] py-3 px-4">Record Name</th>
+                  <th className="text-left text-[9px] tracking-[0.25em] uppercase text-[#4A5568] py-3 px-4">Type</th>
+                  <th className="text-left text-[9px] tracking-[0.25em] uppercase text-[#4A5568] py-3 px-4">Date</th>
+                  <th className="text-left text-[9px] tracking-[0.25em] uppercase text-[#4A5568] py-3 px-4">Size</th>
+                  <th className="text-right text-[9px] tracking-[0.25em] uppercase text-[#4A5568] py-3 px-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((record, index) => (
+                  <tr 
+                    key={record.id} 
+                    className={cn(
+                      "border-b border-[#1E293B] hover:bg-[#111827] transition-colors",
+                      index % 2 === 0 ? "bg-[#0B0F1A]" : "bg-[#111827]"
                     )}
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      <span className="truncate">{record.fileName}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-1">
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => handleDelete(record.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Empty State */}
-        {!isLoading && records.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No records yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Upload your medical documents to keep them organized
-            </p>
-            <Button onClick={() => setShowUploadModal(true)} className="gap-2">
-              <Upload className="h-4 w-4" />
-              Upload Your First Record
-            </Button>
+                  >
+                    <td className="py-4 px-4">
+                      <p className="text-[#F0F4FF] text-sm">{record.title}</p>
+                      <p className="text-[#4A5568] text-xs mt-0.5">{record.fileName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={cn(
+                        "text-[9px] tracking-[0.2em] uppercase px-2 py-0.5 border",
+                        typeColors[record.type]
+                      )}>
+                        {typeLabels[record.type]}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-[#8A9BB5] text-sm font-mono">
+                      {record.uploadedAt}
+                    </td>
+                    <td className="py-4 px-4 text-[#8A9BB5] text-sm font-mono">
+                      2.4 MB
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <button 
+                        className="text-xs text-[#8A9BB5] hover:text-[#00C8FF] transition-colors"
+                        aria-label={`View ${record.title}`}
+                      >
+                        View
+                      </button>
+                      <span className="text-[#1E293B] mx-2">|</span>
+                      <button 
+                        onClick={() => handleDelete(record.id)}
+                        className="text-xs text-[#8A9BB5] hover:text-[#FF4D6D] transition-colors"
+                        aria-label={`Delete ${record.title}`}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        ) : (
+          !isLoading && (
+            <div className="text-center py-12 bg-[#111827] border border-[#1E293B]">
+              <p className="text-lg text-[#8A9BB5] mb-2">No records yet</p>
+              <p className="text-sm text-[#4A5568] mb-4">
+                Upload your medical documents to keep them organized
+              </p>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="text-sm tracking-[0.1em] uppercase text-[#00C8FF] hover:text-[#33D4FF] transition-colors"
+              >
+                Upload Your First Record →
+              </button>
+            </div>
+          )
         )}
 
         {/* Upload Modal */}
-        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Upload Medical Record</DialogTitle>
-              <DialogDescription>
-                Add a new medical document to your records
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Document Title *</Label>
-                <Input
-                  placeholder="e.g., Blood Test Results - January 2024"
-                  value={uploadTitle}
-                  onChange={(e) => setUploadTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Document Type</Label>
-                <Select value={uploadType} onValueChange={(v) => setUploadType(v as MedicalRecord['type'])}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lab_report">Lab Report</SelectItem>
-                    <SelectItem value="prescription">Prescription</SelectItem>
-                    <SelectItem value="imaging">Imaging (X-Ray, MRI, etc.)</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Description (optional)</Label>
-                <Textarea
-                  placeholder="Add any notes about this document..."
-                  value={uploadDescription}
-                  onChange={(e) => setUploadDescription(e.target.value)}
-                  rows={2}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>File *</Label>
-                <div 
-                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {selectedFile ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <FileText className="h-5 w-5 text-primary" />
-                      <span className="text-sm font-medium">{selectedFile.name}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Click to select a file
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PDF, JPG, PNG up to 10MB
-                      </p>
-                    </>
-                  )}
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileSelect}
-                />
-              </div>
-
-              <Button 
-                className="w-full" 
-                onClick={handleUpload}
-                disabled={!uploadTitle || !selectedFile || isLoading}
+        {showUploadModal && (
+          <div className="fixed inset-0 z-50">
+            <div 
+              className="absolute inset-0 bg-[#0B0F1A]/80 backdrop-blur-sm"
+              onClick={() => setShowUploadModal(false)}
+            />
+            <div className="fixed right-0 top-0 w-full max-w-md h-screen bg-[#111827] border-l border-[#1E293B] shadow-2xl animate-slide-in-right overflow-y-auto">
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="absolute top-4 right-4 p-2 text-[#8A9BB5] hover:text-[#F0F4FF] transition-colors"
+                aria-label="Close modal"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Record
-              </Button>
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="p-6">
+                <h2 className="font-['DM_Serif_Display'] text-2xl text-[#F0F4FF] mb-6">
+                  Upload Medical Record
+                </h2>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      Document Title *
+                    </label>
+                    <input
+                      placeholder="e.g., Blood Test Results - January 2024"
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors placeholder:text-[#4A5568]"
+                      value={uploadTitle}
+                      onChange={(e) => setUploadTitle(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      Document Type
+                    </label>
+                    <select
+                      value={uploadType}
+                      onChange={(e) => setUploadType(e.target.value as MedicalRecord['type'])}
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm focus:border-[#00C8FF] focus:outline-none transition-colors"
+                    >
+                      <option value="lab_report">Lab Report</option>
+                      <option value="prescription">Prescription</option>
+                      <option value="imaging">Imaging (X-Ray, MRI, etc.)</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      placeholder="Add any notes about this document..."
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm resize-none h-20 focus:border-[#00C8FF] focus:outline-none transition-colors placeholder:text-[#4A5568]"
+                      value={uploadDescription}
+                      onChange={(e) => setUploadDescription(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      File *
+                    </label>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed p-6 text-center cursor-pointer transition-colors",
+                        selectedFile ? "border-[#00C8FF] bg-[#00C8FF08]" : "border-[#1E293B] hover:border-[#00C8FF44]"
+                      )}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {selectedFile ? (
+                        <div className="flex items-center justify-center gap-2 text-[#00C8FF]">
+                          <span className="text-sm">{selectedFile.name}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-[#4A5568] mx-auto mb-2" />
+                          <p className="text-sm text-[#4A5568]">Click to select a file</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleUpload}
+                    disabled={!uploadTitle || !selectedFile || isLoading}
+                    className="w-full bg-[#00C8FF] text-[#0B0F1A] font-semibold text-sm tracking-wider uppercase py-3 hover:bg-[#33D4FF] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Record
+                  </button>
+                </div>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

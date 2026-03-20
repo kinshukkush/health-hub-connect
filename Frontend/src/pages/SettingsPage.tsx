@@ -1,42 +1,16 @@
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { motion } from 'framer-motion';
-import { Moon, Sun, Monitor, Bell, User, Lock, Globe, Mail, Phone, Save, UserCircle } from 'lucide-react';
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export const SettingsPage = () => {
-  const { theme, setTheme } = useTheme();
   const { user } = useAuth();
-  const { toast } = useToast();
   
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [appointmentReminders, setAppointmentReminders] = useState(true);
-  const [healthTips, setHealthTips] = useState(true);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -44,275 +18,274 @@ export const SettingsPage = () => {
     phone: user?.phone || '',
   });
 
+  const [passwordData, setPasswordData] = useState({
+    current: '',
+    new: '',
+    confirm: '',
+  });
+
   const handleSaveProfile = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile settings have been saved successfully.",
-    });
+    toast.success('Profile settings saved successfully');
   };
 
-  const themeOptions = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System', icon: Monitor },
-  ];
+  const handleChangePassword = () => {
+    if (passwordData.new !== passwordData.confirm) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    toast.success('Password changed successfully');
+    setPasswordData({ current: '', new: '', confirm: '' });
+    setShowPasswordSection(false);
+  };
+
+  const getInitials = (name: string | undefined) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const appointmentCount = 12;
+  const recordsCount = 8;
 
   return (
     <MainLayout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto px-4 py-8 max-w-5xl"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-2">
-            Settings
-          </h1>
-          <p className="text-muted-foreground">Manage your account and preferences</p>
-        </motion.div>
+      <div className="animate-fade-in">
+        <div className="mb-8">
+          <h1 className="font-['DM_Serif_Display'] text-3xl text-[#F0F4FF]">Settings</h1>
+          <p className="text-[#8A9BB5] text-sm mt-1">Manage your account and preferences</p>
+        </div>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="space-y-6"
-        >
-          {/* Profile Settings */}
-          <motion.div variants={item}>
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <UserCircle className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>Update your personal details</CardDescription>
-                  </div>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Panel - Profile Identity (35%) */}
+          <div className="lg:w-[35%]">
+            <div className="bg-[#111827] border border-[#1E293B] p-6 sticky top-24">
+              {/* Large Avatar */}
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 bg-[#00C8FF18] border-2 border-[#00C8FF33] text-4xl text-[#00C8FF] font-light font-mono flex items-center justify-center">
+                  {getInitials(user?.name)}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-6">
-                  <Avatar className="h-20 w-20 border-4 border-primary/20">
-                    <AvatarImage src={user?.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                      {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <User className="h-4 w-4" />
-                      Change Avatar
-                    </Button>
-                    <p className="text-sm text-muted-foreground mt-2">JPG, PNG or GIF (max. 2MB)</p>
-                  </div>
+              </div>
+
+              {/* Name and Role */}
+              <div className="text-center mb-6">
+                <h2 className="font-['DM_Serif_Display'] text-2xl text-[#F0F4FF]">{user?.name}</h2>
+                <span className="inline-block mt-2 text-[9px] tracking-[0.15em] uppercase px-2 py-1 bg-[#1A2235] text-[#8A9BB5] border border-[#1E293B]">
+                  {user?.role}
+                </span>
+              </div>
+
+              {/* Member Since */}
+              <p className="text-center text-xs text-[#4A5568] mb-6">
+                Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024'}
+              </p>
+
+              {/* Stats */}
+              <div className="space-y-0">
+                <div className="flex justify-between py-3 border-b border-[#1E293B]">
+                  <span className="text-sm text-[#8A9BB5]">Appointments</span>
+                  <span className="text-sm text-[#F0F4FF] font-mono">{appointmentCount}</span>
                 </div>
+                <div className="flex justify-between py-3 border-b border-[#1E293B]">
+                  <span className="text-sm text-[#8A9BB5]">Records</span>
+                  <span className="text-sm text-[#F0F4FF] font-mono">{recordsCount}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <Separator />
-
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Full Name
-                    </Label>
-                    <Input
-                      id="name"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                      className="transition-all focus:scale-[1.01]"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      className="transition-all focus:scale-[1.01]"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Phone Number
-                    </Label>
-                    <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                      className="transition-all focus:scale-[1.01]"
-                    />
-                  </div>
+          {/* Right Panel - Editable Form (65%) */}
+          <div className="lg:w-[65%] space-y-6">
+            {/* Personal Info Section */}
+            <div className="bg-[#111827] border border-[#1E293B] p-6">
+              <h3 className="text-[9px] tracking-[0.25em] uppercase text-[#4A5568] mb-6">Personal Information</h3>
+              
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="name" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    id="name"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                  />
                 </div>
 
-                <Button onClick={handleSaveProfile} className="gap-2 w-full sm:w-auto">
-                  <Save className="h-4 w-4" />
+                <div>
+                  <label htmlFor="email" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                    className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone"
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                    className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveProfile}
+                  className="bg-[#00C8FF] text-[#0B0F1A] font-semibold text-sm tracking-wider uppercase px-6 py-3 hover:bg-[#33D4FF] transition-all active:scale-[0.98]"
+                  aria-label="Save changes"
+                >
                   Save Changes
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </button>
+              </div>
+            </div>
 
-          {/* Appearance */}
-          <motion.div variants={item}>
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Globe className="h-5 w-5 text-primary" />
-                  </div>
+            {/* Notifications Section */}
+            <div className="bg-[#111827] border border-[#1E293B] p-6">
+              <h3 className="text-[9px] tracking-[0.25em] uppercase text-[#4A5568] mb-6">Notifications</h3>
+              
+              <div className="space-y-4">
+                <label className="flex items-center justify-between py-3 cursor-pointer">
                   <div>
-                    <CardTitle>Appearance</CardTitle>
-                    <CardDescription>Customize how the app looks to you</CardDescription>
+                    <p className="text-sm text-[#F0F4FF]">Email Notifications</p>
+                    <p className="text-xs text-[#4A5568] mt-0.5">Receive updates via email</p>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Theme Mode</Label>
-                  <div className="grid grid-cols-3 gap-4">
-                    {themeOptions.map((option) => {
-                      const Icon = option.icon;
-                      return (
-                        <motion.button
-                          key={option.value}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setTheme(option.value as any)}
-                          className={`
-                            relative flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
-                            ${theme === option.value 
-                              ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20' 
-                              : 'border-border hover:border-primary/50 bg-card'
-                            }
-                          `}
-                        >
-                          <Icon className={`h-6 w-6 ${theme === option.value ? 'text-primary' : 'text-muted-foreground'}`} />
-                          <span className={`text-sm font-medium ${theme === option.value ? 'text-primary' : 'text-foreground'}`}>
-                            {option.label}
-                          </span>
-                          {theme === option.value && (
-                            <motion.div
-                              layoutId="activeTheme"
-                              className="absolute inset-0 border-2 border-primary rounded-lg"
-                              initial={false}
-                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            />
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                  <div 
+                    className={cn(
+                      "w-10 h-5 rounded-full transition-colors relative cursor-pointer",
+                      emailNotifications ? "bg-[#00C8FF]" : "bg-[#1E293B]"
+                    )}
+                    onClick={() => setEmailNotifications(!emailNotifications)}
+                  >
+                    <div 
+                      className={cn(
+                        "w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform",
+                        emailNotifications ? "translate-x-5" : "translate-x-0.5"
+                      )}
+                    />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </label>
 
-          {/* Notifications */}
-          <motion.div variants={item}>
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Bell className="h-5 w-5 text-primary" />
-                  </div>
+                <label className="flex items-center justify-between py-3 cursor-pointer">
                   <div>
-                    <CardTitle>Notifications</CardTitle>
-                    <CardDescription>Manage how you receive updates</CardDescription>
+                    <p className="text-sm text-[#F0F4FF]">SMS Notifications</p>
+                    <p className="text-xs text-[#4A5568] mt-0.5">Get text message alerts</p>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="email-notifications" className="text-base font-medium">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive updates via email</p>
+                  <div 
+                    className={cn(
+                      "w-10 h-5 rounded-full transition-colors relative cursor-pointer",
+                      smsNotifications ? "bg-[#00C8FF]" : "bg-[#1E293B]"
+                    )}
+                    onClick={() => setSmsNotifications(!smsNotifications)}
+                  >
+                    <div 
+                      className={cn(
+                        "w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform",
+                        smsNotifications ? "translate-x-5" : "translate-x-0.5"
+                      )}
+                    />
                   </div>
-                  <Switch
-                    id="email-notifications"
-                    checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
-                  />
-                </div>
+                </label>
 
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="sms-notifications" className="text-base font-medium">SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Get text message alerts</p>
-                  </div>
-                  <Switch
-                    id="sms-notifications"
-                    checked={smsNotifications}
-                    onCheckedChange={setSmsNotifications}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="appointment-reminders" className="text-base font-medium">Appointment Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Reminders before appointments</p>
-                  </div>
-                  <Switch
-                    id="appointment-reminders"
-                    checked={appointmentReminders}
-                    onCheckedChange={setAppointmentReminders}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="health-tips" className="text-base font-medium">Health Tips</Label>
-                    <p className="text-sm text-muted-foreground">Daily health and wellness tips</p>
-                  </div>
-                  <Switch
-                    id="health-tips"
-                    checked={healthTips}
-                    onCheckedChange={setHealthTips}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Security */}
-          <motion.div variants={item}>
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Lock className="h-5 w-5 text-primary" />
-                  </div>
+                <label className="flex items-center justify-between py-3 cursor-pointer">
                   <div>
-                    <CardTitle>Security</CardTitle>
-                    <CardDescription>Manage your account security</CardDescription>
+                    <p className="text-sm text-[#F0F4FF]">Appointment Reminders</p>
+                    <p className="text-xs text-[#4A5568] mt-0.5">Reminders before appointments</p>
                   </div>
+                  <div 
+                    className={cn(
+                      "w-10 h-5 rounded-full transition-colors relative cursor-pointer",
+                      appointmentReminders ? "bg-[#00C8FF]" : "bg-[#1E293B]"
+                    )}
+                    onClick={() => setAppointmentReminders(!appointmentReminders)}
+                  >
+                    <div 
+                      className={cn(
+                        "w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform",
+                        appointmentReminders ? "translate-x-5" : "translate-x-0.5"
+                      )}
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Security Section */}
+            <div className="bg-[#111827] border border-[#1E293B] p-6">
+              <h3 className="text-[9px] tracking-[0.25em] uppercase text-[#4A5568] mb-6">Security</h3>
+              
+              <button
+                onClick={() => setShowPasswordSection(!showPasswordSection)}
+                className="text-sm text-[#00C8FF] hover:text-[#33D4FF] transition-colors"
+                aria-expanded={showPasswordSection}
+              >
+                {showPasswordSection ? '[−]' : '[+]'} Change Password
+              </button>
+
+              {showPasswordSection && (
+                <div className="mt-6 space-y-5 animate-fade-in">
+                  <div>
+                    <label htmlFor="current-password" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      Current Password
+                    </label>
+                    <input
+                      id="current-password"
+                      type="password"
+                      value={passwordData.current}
+                      onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="new-password" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      New Password
+                    </label>
+                    <input
+                      id="new-password"
+                      type="password"
+                      value={passwordData.new}
+                      onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirm-password" className="block text-[10px] tracking-[0.2em] uppercase text-[#8A9BB5] mb-2">
+                      Confirm New Password
+                    </label>
+                    <input
+                      id="confirm-password"
+                      type="password"
+                      value={passwordData.confirm}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                      className="w-full bg-[#0B0F1A] border border-[#1E293B] text-[#F0F4FF] px-4 py-3 text-sm rounded-[4px] focus:border-[#00C8FF] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleChangePassword}
+                    className="bg-[#00C8FF] text-[#0B0F1A] font-semibold text-sm tracking-wider uppercase px-6 py-3 hover:bg-[#33D4FF] transition-all active:scale-[0.98]"
+                    aria-label="Update password"
+                  >
+                    Update Password
+                  </button>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full sm:w-auto gap-2">
-                  <Lock className="h-4 w-4" />
-                  Change Password
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Last password change: Never
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+              )}
+
+              <p className="text-xs text-[#4A5568] mt-4">
+                Last password change: Never
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </MainLayout>
   );
 };

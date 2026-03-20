@@ -1,9 +1,7 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useCountUp } from '@/hooks/useCountUp';
 
 interface StatsCardProps {
   title: string;
@@ -17,19 +15,19 @@ interface StatsCardProps {
 }
 
 const variantStyles = {
-  default: 'bg-muted/50 text-muted-foreground',
-  primary: 'bg-primary/10 text-primary',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  info: 'bg-info/10 text-info',
+  default: 'border-l-[#8A9BB5]',
+  primary: 'border-l-[#00C8FF]',
+  success: 'border-l-[#00D4A1]',
+  warning: 'border-l-[#F5A623]',
+  info: 'border-l-[#00C8FF]',
 };
 
-const variantGradients = {
-  default: 'from-muted/5 to-transparent',
-  primary: 'from-primary/5 to-transparent',
-  success: 'from-success/5 to-transparent',
-  warning: 'from-warning/5 to-transparent',
-  info: 'from-info/5 to-transparent',
+const variantTextColors = {
+  default: 'text-[#8A9BB5]',
+  primary: 'text-[#00C8FF]',
+  success: 'text-[#00D4A1]',
+  warning: 'text-[#F5A623]',
+  info: 'text-[#00C8FF]',
 };
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -39,66 +37,36 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   trend,
   variant = 'default',
 }) => {
+  const numericValue = typeof value === 'number' ? value : parseInt(value.toString()) || 0;
+  const { value: animatedValue } = useCountUp(numericValue);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ y: -4 }}
-    >
-      <Card className="hover:shadow-xl hover:border-primary/30 transition-all duration-300 overflow-hidden relative group">
-        {/* Gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-          variantGradients[variant]
-        )} />
-        
-        <CardContent className="p-6 relative">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2 flex-1">
-              <p className="text-sm text-muted-foreground font-medium">{title}</p>
-              <motion.p 
-                className="text-3xl font-bold text-foreground"
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              >
-                {value}
-              </motion.p>
-              {trend && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="flex items-center gap-1"
-                >
-                  {trend.isPositive ? (
-                    <TrendingUp className="h-3 w-3 text-success" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 text-destructive" />
-                  )}
-                  <p className={cn(
-                    "text-xs font-semibold",
-                    trend.isPositive ? "text-success" : "text-destructive"
-                  )}>
-                    {Math.abs(trend.value)}% from last week
-                  </p>
-                </motion.div>
-              )}
-            </div>
-            <motion.div 
-              className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-xl shadow-lg",
-                variantStyles[variant]
-              )}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Icon className="h-7 w-7" />
-            </motion.div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+    <div className={cn(
+      "bg-[#111827] border border-[#1E293B] border-l-2 p-5 hover:border-[#00C8FF33] hover:shadow-[0_0_24px_rgba(0,200,255,0.06)] transition-all duration-300",
+      variantStyles[variant]
+    )}>
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A9BB5]">{title}</p>
+          <p className={cn(
+            "text-3xl font-light font-mono",
+            variantTextColors[variant]
+          )}>
+            {typeof value === 'number' ? animatedValue : value}
+          </p>
+          {trend && (
+            <p className={cn(
+              "text-xs",
+              trend.isPositive ? "text-[#00D4A1]" : "text-[#FF4D6D]"
+            )}>
+              {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}% from last week
+            </p>
+          )}
+        </div>
+        <div className="p-2 bg-[#1A2235] border border-[#1E293B]">
+          <Icon className={cn("h-5 w-5", variantTextColors[variant])} />
+        </div>
+      </div>
+    </div>
   );
 };

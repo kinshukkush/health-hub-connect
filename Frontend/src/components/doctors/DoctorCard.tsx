@@ -1,10 +1,5 @@
 import React, { memo } from 'react';
 import { Doctor } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Star, Clock, MapPin, Languages, Award, GraduationCap } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -17,144 +12,67 @@ export const DoctorCard: React.FC<DoctorCardProps> = memo(({
   onViewProfile,
   onBookAppointment,
 }) => {
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ y: -4 }}
-    >
-      <Card className="group hover:shadow-xl hover:border-primary/40 transition-all duration-300 overflow-hidden relative">
-        {/* Subtle gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div className="bg-[#111827] border border-[#1E293B] hover:border-[#00C8FF44] transition-all duration-300 p-5 hover:-translate-y-0.5">
+      {/* Top Row: Avatar, Name, Specialty */}
+      <div className="flex items-start gap-4">
+        {/* Avatar with initials */}
+        <div className="w-12 h-12 bg-[#0B0F1A] border border-[#1E293B] flex items-center justify-center text-[#8A9BB5] text-sm font-medium shrink-0">
+          {getInitials(doctor.name)}
+        </div>
         
-        <CardContent className="p-6 relative">
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <motion.div 
-              className="relative"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <img
-                src={doctor.avatar}
-                alt={doctor.name}
-                className="h-20 w-20 rounded-xl object-cover ring-2 ring-primary/20 shadow-lg"
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-['DM_Serif_Display'] text-lg text-[#F0F4FF] truncate">
+              {doctor.name}
+            </h3>
+            {/* Availability dot */}
+            {doctor.available ? (
+              <span 
+                className="w-2 h-2 rounded-full bg-[#00D4A1] animate-pulse-dot shrink-0"
+                aria-label="Available"
               />
-              {doctor.available && (
-                <motion.span 
-                  className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-success border-2 border-card"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                />
-              )}
-              <div className="absolute -top-1 -right-1 bg-primary/10 backdrop-blur-sm rounded-full p-1">
-                <Award className="h-3 w-3 text-primary" />
-              </div>
-            </motion.div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-foreground truncate group-hover:text-primary transition-colors">
-                    {doctor.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-sm text-primary font-medium">
-                      {doctor.specialization}
-                    </p>
-                    <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                </div>
-                <Badge variant={doctor.available ? 'success' : 'secondary'} className="shadow-sm">
-                  {doctor.available ? '● Available' : 'Busy'}
-                </Badge>
-              </div>
-
-              <p className="text-sm text-muted-foreground mt-2 font-medium">
-                {doctor.qualification} • {doctor.experience} years exp.
-              </p>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-5 flex items-center gap-6 text-sm">
-            <motion.div 
-              className="flex items-center gap-1.5"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Star className="h-4 w-4 text-warning fill-warning" />
-              <span className="font-semibold">{doctor.rating}</span>
-              <span className="text-muted-foreground">({doctor.reviewCount} reviews)</span>
-            </motion.div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{doctor.hospital}</span>
-            </div>
-          </div>
-
-          {/* Languages */}
-          <div className="mt-4 flex items-center gap-2">
-            <Languages className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="flex gap-1.5 flex-wrap">
-              {doctor.languages.map((lang, index) => (
-                <motion.div
-                  key={lang}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Badge variant="secondary" className="text-xs shadow-sm">
-                    {lang}
-                  </Badge>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Fee & Next Available */}
-          <div className="mt-5 p-3 rounded-lg bg-muted/50 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Consultation:</span>
-              <span className="font-bold text-lg text-primary">${doctor.consultationFee}</span>
-            </div>
-            {doctor.available && (
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Clock className="h-4 w-4 animate-pulse-gentle" />
-                <span className="text-xs">Next: {doctor.nextAvailable}</span>
-              </div>
+            ) : (
+              <span 
+                className="w-2 h-2 rounded-full bg-[#4A5568] shrink-0"
+                aria-label="Not available"
+              />
             )}
           </div>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[#00C8FF] mt-1">
+            {doctor.specialization}
+          </p>
+        </div>
+      </div>
 
-          {/* Actions */}
-          <div className="mt-5 flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1 group/btn hover:border-primary hover:text-primary transition-all"
-              onClick={() => onViewProfile(doctor)}
-            >
-              View Profile
-              <motion.span
-                className="ml-2 inline-block"
-                animate={{ x: [0, 4, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                →
-              </motion.span>
-            </Button>
-            <Button
-              variant="default"
-              className="flex-1 shadow-md hover:shadow-lg hover:scale-105 transition-all"
-              disabled={!doctor.available}
-              onClick={() => onBookAppointment(doctor)}
-            >
-              Book Now
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+      {/* Middle: Stats Pills */}
+      <div className="flex flex-wrap items-center gap-3 mt-4 text-xs">
+        <span className="px-2 py-1 bg-[#1A2235] border border-[#1E293B] text-[#8A9BB5]">
+          {doctor.experience} yrs
+        </span>
+        <span className="px-2 py-1 bg-[#1A2235] border border-[#1E293B] text-[#8A9BB5]">
+          ${doctor.consultationFee}
+        </span>
+        <span className="px-2 py-1 bg-[#1A2235] border border-[#1E293B] text-[#8A9BB5] flex items-center gap-1">
+          <span className="text-[#F5A623]">★</span>
+          {doctor.rating}
+        </span>
+      </div>
+
+      {/* Bottom: Book Consultation */}
+      <button
+        onClick={() => onBookAppointment(doctor)}
+        disabled={!doctor.available}
+        className="w-full mt-4 pt-3 border-t border-[#1E293B] text-xs tracking-widest uppercase text-[#00C8FF] hover:text-[#33D4FF] transition-colors disabled:text-[#4A5568] disabled:cursor-not-allowed text-left"
+        aria-label={`Book consultation with ${doctor.name}`}
+      >
+        {doctor.available ? 'Book Consultation →' : 'Not Available'}
+      </button>
+    </div>
   );
 });
 

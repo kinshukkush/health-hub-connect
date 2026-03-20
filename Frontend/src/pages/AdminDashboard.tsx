@@ -1,19 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { StatsCard } from '@/components/dashboard/StatsCard';
 import { AppointmentCard } from '@/components/appointments/AppointmentCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppointments } from '@/context/AppointmentContext';
 import { mockDashboardStats } from '@/data/mockData';
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle2, 
-  Users, 
-  Stethoscope,
-  TrendingUp,
-  CalendarCheck
-} from 'lucide-react';
+import { useCountUp } from '@/hooks/useCountUp';
 import { toast } from 'sonner';
 import {
   AreaChart,
@@ -26,8 +16,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
   Legend,
 } from 'recharts';
 
@@ -42,9 +30,9 @@ const weeklyData = [
 ];
 
 const statusData = [
-  { name: 'Approved', value: 89, color: 'hsl(152, 70%, 40%)' },
-  { name: 'Pending', value: 23, color: 'hsl(38, 95%, 50%)' },
-  { name: 'Completed', value: 44, color: 'hsl(205, 85%, 50%)' },
+  { name: 'Approved', value: 89, color: '#00D4A1' },
+  { name: 'Pending', value: 23, color: '#F5A623' },
+  { name: 'Completed', value: 44, color: '#00C8FF' },
 ];
 
 export const AdminDashboard: React.FC = () => {
@@ -56,6 +44,12 @@ export const AdminDashboard: React.FC = () => {
     .slice(0, 5);
 
   const stats = mockDashboardStats;
+
+  // Animated count-up values
+  const { value: totalPatients } = useCountUp(stats.totalPatients);
+  const { value: totalDoctors } = useCountUp(stats.totalDoctors);
+  const { value: todayAppointments } = useCountUp(stats.todayAppointments);
+  const { value: pendingCount } = useCountUp(stats.pendingAppointments);
 
   const handleApprove = async (id: string) => {
     await updateAppointmentStatus(id, 'approved');
@@ -72,149 +66,130 @@ export const AdminDashboard: React.FC = () => {
       <div className="space-y-8 animate-fade-in">
         {/* Header */}
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="font-['DM_Serif_Display'] text-3xl text-[#F0F4FF]">Admin Dashboard</h1>
+          <p className="text-[#8A9BB5] text-sm mt-1">
             Overview of appointments and system analytics
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid with Animated Count-Up */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard
-            title="Total Appointments"
-            value={stats.totalAppointments}
-            icon={Calendar}
-            variant="primary"
-            trend={{ value: 12, isPositive: true }}
-          />
-          <StatsCard
-            title="Pending Requests"
-            value={stats.pendingAppointments}
-            icon={Clock}
-            variant="warning"
-          />
-          <StatsCard
-            title="Today's Schedule"
-            value={stats.todayAppointments}
-            icon={CalendarCheck}
-            variant="success"
-          />
-          <StatsCard
-            title="Total Patients"
-            value={stats.totalPatients}
-            icon={Users}
-            variant="info"
-          />
+          <div className="bg-[#111827] border border-[#1E293B] border-l-2 border-l-[#00C8FF] p-5 hover:border-[#00C8FF33] hover:shadow-[0_0_24px_rgba(0,200,255,0.06)] transition-all duration-300">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A9BB5]">Total Patients</p>
+            <p className="text-3xl font-light text-[#00C8FF] font-mono mt-2">{totalPatients}</p>
+          </div>
+          <div className="bg-[#111827] border border-[#1E293B] border-l-2 border-l-[#00D4A1] p-5 hover:border-[#00D4A133] hover:shadow-[0_0_24px_rgba(0,212,161,0.06)] transition-all duration-300">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A9BB5]">Total Doctors</p>
+            <p className="text-3xl font-light text-[#00D4A1] font-mono mt-2">{totalDoctors}</p>
+          </div>
+          <div className="bg-[#111827] border border-[#1E293B] border-l-2 border-l-[#00C8FF] p-5 hover:border-[#00C8FF33] hover:shadow-[0_0_24px_rgba(0,200,255,0.06)] transition-all duration-300">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A9BB5]">Appointments Today</p>
+            <p className="text-3xl font-light text-[#00C8FF] font-mono mt-2">{todayAppointments}</p>
+          </div>
+          <div className="bg-[#111827] border border-[#1E293B] border-l-2 border-l-[#F5A623] p-5 hover:border-[#F5A62333] hover:shadow-[0_0_24px_rgba(245,166,35,0.06)] transition-all duration-300">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A9BB5]">Pending Approvals</p>
+            <p className="text-3xl font-light text-[#F5A623] font-mono mt-2">{pendingCount}</p>
+          </div>
         </div>
 
         {/* Charts Row */}
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Weekly Appointments Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Weekly Appointments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={weeklyData}>
-                    <defs>
-                      <linearGradient id="colorAppointments" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(174, 72%, 40%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(174, 72%, 40%)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(210, 25%, 88%)" />
-                    <XAxis dataKey="name" stroke="hsl(215, 16%, 47%)" fontSize={12} />
-                    <YAxis stroke="hsl(215, 16%, 47%)" fontSize={12} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(0, 0%, 100%)',
-                        border: '1px solid hsl(210, 25%, 88%)',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="appointments"
-                      stroke="hsl(174, 72%, 40%)"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorAppointments)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-[#111827] border border-[#1E293B] p-6">
+            <h2 className="font-['DM_Serif_Display'] text-xl text-[#F0F4FF] mb-6">Weekly Appointments</h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={weeklyData}>
+                  <defs>
+                    <linearGradient id="colorAppointments" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#00C8FF" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#00C8FF" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                  <XAxis dataKey="name" stroke="#4A5568" fontSize={12} />
+                  <YAxis stroke="#4A5568" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#111827',
+                      border: '1px solid #1E293B',
+                      borderRadius: '4px',
+                      color: '#F0F4FF',
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="appointments"
+                    stroke="#00C8FF"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorAppointments)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
           {/* Status Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                Appointment Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-[#111827] border border-[#1E293B] p-6">
+            <h2 className="font-['DM_Serif_Display'] text-xl text-[#F0F4FF] mb-6">Appointment Status</h2>
+            <div className="h-64 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#111827',
+                      border: '1px solid #1E293B',
+                      borderRadius: '4px',
+                      color: '#F0F4FF',
+                    }}
+                  />
+                  <Legend
+                    formatter={(value) => <span style={{ color: '#8A9BB5' }}>{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
         {/* Pending Appointments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-warning" />
-              Pending Appointments ({pendingAppointments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pendingAppointments.length > 0 ? (
-              <div className="space-y-4">
-                {pendingAppointments.map((appointment) => (
-                  <AppointmentCard
-                    key={appointment.id}
-                    appointment={appointment}
-                    isAdmin
-                    showActions
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-success" />
-                <p>All appointments have been processed!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="bg-[#111827] border border-[#1E293B] p-6">
+          <h2 className="font-['DM_Serif_Display'] text-xl text-[#F0F4FF] mb-6">
+            Pending Appointments ({pendingAppointments.length})
+          </h2>
+          {pendingAppointments.length > 0 ? (
+            <div className="space-y-4">
+              {pendingAppointments.map((appointment) => (
+                <AppointmentCard
+                  key={appointment.id}
+                  appointment={appointment}
+                  isAdmin
+                  showActions
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-[#8A9BB5]">
+              <p>All appointments have been processed!</p>
+            </div>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
