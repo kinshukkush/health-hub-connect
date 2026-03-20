@@ -1,0 +1,150 @@
+# HealthHub Connect - Smoke Tests Workflow
+# Runs smoke tests after Vercel deployment to verify production readiness
+
+name: Smoke Tests
+
+on:
+  workflow_run:
+    workflows: ["Vercel Production Deployment", "Deploy to Vercel"]
+    types:
+      - completed
+    branches:
+      - main
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to test against'
+        required: false
+        default: 'https://health-hub-connect-livid.vercel.app'
+
+env:
+  BASE_URL: ${{ github.event.inputs.base_url || 'https://health-hub-connect-livid.vercel.app' }}
+  API_BASE_URL: 'https://mern-backend-main-zeta.vercel.app'
+
+jobs:
+  smoke-test:
+    name: Smoke Tests (Chromium)
+    runs-on: ubuntu-latest
+    # Only run if deployment was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: playwright-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: playwright-tests
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: playwright-tests
+        run: npx playwright install chromium --with-deps
+
+      - name: Create .env file
+        working-directory: playwright-tests
+        run: |
+          cat > .env << EOF
+          BASE_URL=${{ env.BASE_URL }}
+          API_BASE_URL=${{ env.API_BASE_URL }}
+          TEST_USER_EMAIL=patient@demo.com
+          TEST_USER_PASSWORD=demo123
+          TEST_ADMIN_EMAIL=admin@demo.com
+          TEST_ADMIN_PASSWORD=demo123
+          EOF
+
+      - name: Run Smoke Tests
+        working-directory: playwright-tests
+        run: |
+          npx playwright test --grep @smoke --project=chromium --reporter=html,json
+        env:
+          CI: true
+
+      - name: Upload Smoke Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-report
+          path: playwright-tests/playwright-report/
+          retention-days: 14
+
+      - name: Upload Test Results JSON
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results
+          path: playwright-tests/test-results/
+          retention-days: 7
+
+      - name: Post Test Summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let summary = '## Smoke Tests Results\n\n';
+
+            // Check if tests passed
+            const testsPassed = '${{ job.status }}' === 'success';
+
+            if (testsPassed) {
+              summary += '### Status: :white_check_mark: **PASSED**\n\n';
+              summary += 'All smoke tests completed successfully!\n\n';
+            } else {
+              summary += '### Status: :x: **FAILED**\n\n';
+              summary += 'Some smoke tests failed. Please check the artifacts for details.\n\n';
+            }
+
+            summary += '| Test Type | Browser | Status |\n';
+            summary += '|-----------|---------|--------|\n';
+            summary += `| Smoke Tests | Chromium | ${testsPassed ? ':white_check_mark: Passed' : ':x: Failed'} |\n\n`;
+
+            summary += '### Artifacts\n';
+            summary += '- [Smoke Test Report](../actions/runs/${{ github.run_id }})\n\n';
+
+            summary += `**Tested URL:** ${{ env.BASE_URL }}\n`;
+            summary += `**Run ID:** ${{ github.run_id }}\n`;
+            summary += `**Commit:** ${{ github.sha }}\n`;
+
+            // Add summary to GitHub Actions
+            await core.summary
+              .addRaw(summary)
+              .write();
+
+      - name: Create commit comment
+        if: always() && github.event_name == 'workflow_run'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testsPassed = '${{ job.status }}' === 'success';
+            const emoji = testsPassed ? ':white_check_mark:' : ':x:';
+            const status = testsPassed ? 'PASSED' : 'FAILED';
+
+            const body = `## ${emoji} Smoke Tests ${status}
+
+            | Test Suite | Browser | Status |
+            |------------|---------|--------|
+            | Smoke Tests | Chromium | ${testsPassed ? 'Passed' : 'Failed'} |
+
+            **Tested URL:** ${{ env.BASE_URL }}
+            **Run:** [View Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: body
+            });

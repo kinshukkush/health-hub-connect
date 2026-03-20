@@ -1,0 +1,78 @@
+{
+  "name": "HealthHub Connect API Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://mern-backend-main-zeta.vercel.app",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "test_user_email",
+      "value": "patient@demo.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_user_password",
+      "value": "demo123",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "test_admin_email",
+      "value": "admin@demo.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_admin_password",
+      "value": "demo123",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "test_doctor_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_appointment_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_record_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_user_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_product_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

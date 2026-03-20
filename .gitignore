@@ -123,3 +123,114 @@ Desktop.ini
 **/TODO-personal.md
 ALL_DEPLOYMENT_DETAILS.md
 INTERVIEW_GUIDE.md
+.aider*
+
+# ===========================================
+# QA TEST ARTIFACTS TO EXCLUDE (Keep README only)
+# ===========================================
+
+# Playwright Test Artifacts (exclude from repo)
+**/playwright-report/
+**/allure-report/
+**/allure-results/
+**/.playwright/
+**/blob-report/
+**/test-results/**/*.png
+**/test-results/**/*.webm
+**/test-results/**/*.zip
+**/test-results/**/*.json
+
+# Newman/Postman Reports
+api-tests/newman/
+api-tests/reports/
+api-tests/*.html
+api-tests/api-smoke-report.html
+api-tests/postman-reports/
+
+# Appium Test Artifacts
+appium-tests/allure-report/
+appium-tests/allure-results/
+appium-tests/.appium/
+appium-tests/logs/
+appium-tests/screenshots/*.png
+appium-tests/videos/*.mp4
+
+# HTML Reports (auto-generated)
+**/report.html
+**/test-report.html
+**/*-report.html
+
+# Trace files
+*.trace.zip
+**/traces/*.zip
+
+# HAR files (network logs)
+*.har
+
+# JUnit XML files
+**/junit-*.xml
+**/results-*.xml
+
+# Allure artifacts
+**/allure-results/**
+**/allure-report/**
+
+# Temporary test data
+**/test-data-temp/
+**/fixtures-temp/
+**/.test-cache/
+
+# IDE Test Runner Cache
+**/.playwright-ct/
+
+# Mocha/Jest output
+**/mochawesome-report/
+**/jest-report/
+
+# WebDriver logs
+**/webdriver-logs/
+**/chromedriver.log
+**/geckodriver.log
+
+# Mobile testing
+**/ios-*.log
+**/android-*.log
+**/device-logs/
+
+# Screenshot comparison
+**/__diff_output__/
+**/__image_snapshots__/
+
+# Code coverage (keep config, exclude output)
+.nyc_output/
+coverage/
+coverage-final.json
+*.lcov
+
+# Video recordings (large files)
+**/*.mp4
+**/*.webm
+**/*.avi
+**/videos/**
+
+# Keep only specific README files, exclude other auto-generated docs
+# (Comment out if you want to keep all markdown files)
+# **/CHANGELOG.md
+
+# Package manager debug logs
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# ESLint cache
+.eslintcache
+.eslintrc.json.bak
+
+# TypeScript build info (exclude for cleaner repo)
+*.tsbuildinfo
+
+# Husky hooks (local only)
+.husky/_/
+
+# Deployment artifacts
+*.tar.gz
+*.zip

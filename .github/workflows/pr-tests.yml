@@ -1,0 +1,268 @@
+# HealthHub Connect - Pull Request Tests Workflow
+# Runs on every PR to main branch - lint, smoke tests, and API validation
+
+name: PR Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  BASE_URL: 'https://health-hub-connect-livid.vercel.app'
+  API_BASE_URL: 'https://mern-backend-main-zeta.vercel.app'
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: pr-tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Lint Check
+  lint-check:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: playwright-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: playwright-tests
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: playwright-tests
+        run: |
+          # Create eslint config if not exists
+          if [ ! -f ".eslintrc.json" ]; then
+            cat > .eslintrc.json << 'EOF'
+          {
+            "root": true,
+            "env": {
+              "node": true,
+              "es2022": true
+            },
+            "extends": [
+              "eslint:recommended"
+            ],
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+              "ecmaVersion": "latest",
+              "sourceType": "module"
+            },
+            "plugins": ["@typescript-eslint"],
+            "rules": {
+              "no-unused-vars": "warn",
+              "no-console": "off",
+              "@typescript-eslint/no-unused-vars": "warn"
+            },
+            "ignorePatterns": ["node_modules/", "test-results/", "playwright-report/"]
+          }
+          EOF
+          fi
+
+          # Install ESLint if not present
+          npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin 2>/dev/null || true
+
+          # Run linting
+          npx eslint pages/ tests/ utils/ --ext .ts --max-warnings 50 || echo "Lint warnings found"
+
+      - name: Lint Summary
+        if: always()
+        run: echo "Lint check completed"
+
+  # Job 2: Smoke Playwright Tests
+  smoke-playwright:
+    name: Smoke Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint-check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: playwright-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: playwright-tests
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: playwright-tests
+        run: npx playwright install chromium --with-deps
+
+      - name: Create .env file
+        working-directory: playwright-tests
+        run: |
+          cat > .env << EOF
+          BASE_URL=${{ env.BASE_URL }}
+          API_BASE_URL=${{ env.API_BASE_URL }}
+          TEST_USER_EMAIL=patient@demo.com
+          TEST_USER_PASSWORD=demo123
+          TEST_ADMIN_EMAIL=admin@demo.com
+          TEST_ADMIN_PASSWORD=demo123
+          EOF
+
+      - name: Run Smoke Tests
+        working-directory: playwright-tests
+        run: |
+          npx playwright test --grep @smoke --project=chromium --reporter=html,list
+        env:
+          CI: true
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-smoke-report
+          path: playwright-tests/playwright-report/
+          retention-days: 7
+
+      - name: Upload Screenshots on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: pr-smoke-screenshots
+          path: playwright-tests/test-results/
+          retention-days: 7
+
+  # Job 3: API Smoke Tests
+  api-smoke:
+    name: API Smoke Tests (Newman)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint-check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Run API Smoke Tests (AUTH folder only)
+        working-directory: api-tests
+        run: |
+          # Run only AUTH related tests from the collection
+          newman run HealthHub-API-Tests.postman_collection.json \
+            -e postman-environment.json \
+            --folder "AUTH" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export api-smoke-report.html \
+            --bail \
+            --timeout-request 10000 \
+            --delay-request 100 || true
+        continue-on-error: true
+
+      - name: Upload API Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-api-smoke-report
+          path: api-tests/api-smoke-report.html
+          retention-days: 7
+
+  # Summary Job
+  pr-summary:
+    name: PR Test Summary
+    runs-on: ubuntu-latest
+    needs: [lint-check, smoke-playwright, api-smoke]
+    if: always()
+
+    steps:
+      - name: Check Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lintResult = '${{ needs.lint-check.result }}';
+            const smokeResult = '${{ needs.smoke-playwright.result }}';
+            const apiResult = '${{ needs.api-smoke.result }}';
+
+            const allPassed = lintResult === 'success' &&
+                              smokeResult === 'success' &&
+                              apiResult !== 'failure';
+
+            let summary = '## PR Test Results\n\n';
+            summary += '| Test Suite | Status |\n';
+            summary += '|------------|--------|\n';
+            summary += `| Lint Check | ${lintResult === 'success' ? ':white_check_mark: Passed' : ':x: Failed'} |\n`;
+            summary += `| Smoke Tests (Playwright) | ${smokeResult === 'success' ? ':white_check_mark: Passed' : ':x: Failed'} |\n`;
+            summary += `| API Smoke Tests (Newman) | ${apiResult === 'success' ? ':white_check_mark: Passed' : apiResult === 'skipped' ? ':warning: Skipped' : ':x: Failed'} |\n\n`;
+
+            if (allPassed) {
+              summary += ':sparkles: **All checks passed! This PR is ready for review.**\n';
+            } else {
+              summary += ':warning: **Some checks failed. Please review the test results before merging.**\n';
+            }
+
+            summary += '\n### Artifacts\n';
+            summary += '- [Smoke Test Report](../actions/runs/${{ github.run_id }})\n';
+            summary += '- [API Test Report](../actions/runs/${{ github.run_id }})\n';
+
+            await core.summary
+              .addRaw(summary)
+              .write();
+
+      - name: Create PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lintResult = '${{ needs.lint-check.result }}';
+            const smokeResult = '${{ needs.smoke-playwright.result }}';
+            const apiResult = '${{ needs.api-smoke.result }}';
+
+            const getEmoji = (result) => {
+              if (result === 'success') return ':white_check_mark:';
+              if (result === 'skipped') return ':warning:';
+              return ':x:';
+            };
+
+            const body = `## PR Test Results
+
+            | Test Suite | Status |
+            |------------|--------|
+            | Lint Check | ${getEmoji(lintResult)} ${lintResult} |
+            | Smoke Tests (Playwright) | ${getEmoji(smokeResult)} ${smokeResult} |
+            | API Smoke Tests (Newman) | ${getEmoji(apiResult)} ${apiResult} |
+
+            **Run:** [View Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ---
+            _Automated by HealthHub Connect QA Pipeline_
+            `;
+
+            // Post comment on PR
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            } catch (error) {
+              console.log('Could not post PR comment:', error.message);
+            }

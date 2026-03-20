@@ -293,6 +293,84 @@ MediTrack is a healthcare platform that enables users to:
 
 ---
 
-**Document Status:** Draft  
-**Last Updated:** January 2, 2026  
+**Document Status:** Draft
+**Last Updated:** January 2, 2026
 **Next Review:** January 8, 2026
+
+---
+
+## 14. HealthHub Connect Expansion (v2.0)
+
+### 14.1 Expanded Test Scope
+The test plan has been expanded for HealthHub Connect with the following additions:
+
+| Module | Test Cases | Automation | Status |
+|--------|------------|------------|--------|
+| Authentication | 20 | Playwright | Complete |
+| Appointment | 25 | Playwright | Complete |
+| Doctor Browse | 15 | Playwright | Complete |
+| Medical Records | 25 | Playwright | Complete |
+| Admin Dashboard | 20 | Playwright | Complete |
+| Profile | 25 | Playwright | Complete |
+| API Testing | 30 | Postman/Newman | Complete |
+| Mobile/Responsive | 20 | Appium | Complete |
+| **Total** | **200+** | **All** | **Complete** |
+
+### 14.2 Test Data - Healthcare Domain
+
+**Doctor Specializations:**
+- Cardiology
+- Neurology
+- Orthopedics
+- Dermatology
+- Pediatrics
+- General Medicine
+
+**Medical Record Types:**
+- Blood Test
+- X-Ray
+- MRI Report
+- CT Scan
+- Ultrasound
+- Prescription
+- Discharge Summary
+- Lab Report
+
+**Appointment Reasons:**
+- Routine checkup
+- Follow-up consultation
+- Vaccination
+- Health screening
+- Specialist consultation
+
+### 14.3 Test Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Patient | patient@demo.com | demo123 |
+| Admin | admin@demo.com | demo123 |
+
+### 14.4 Automation Architecture
+
+**Page Object Model (POM) Classes:**
+- LoginPage.ts
+- RegistrationPage.ts
+- AppointmentPage.ts
+- DoctorPage.ts
+- MedicalRecordsPage.ts
+- AdminPage.ts
+- ProfilePage.ts
+- DashboardPage.ts
+
+**Test Helpers:**
+- loginAsUser()
+- loginAsAdmin()
+- generateTestUser()
+- waitForToast()
+- clearAndType()
+- takeScreenshotOnFailure()
+
+---
+
+**Last Updated:** 2026-03-20
+**Version:** 2.0 - HealthHub Connect
